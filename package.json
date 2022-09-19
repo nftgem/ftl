@@ -1,0 +1,32 @@
+{
+  "name": "ftl",
+  "version": "1.0.0",
+  "description": "Fast Template Language for React",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "github.com/nftgem/ftl"
+  },
+  "keywords": [
+    "react"
+  ],
+  "author": "template",
+  "license": "ISC",
+  "dependencies": {
+    "@material-ui/core": "^4.12.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.3",
+    "@types/mocha": "^9.1.1",
+    "assert": "^2.0.0",
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0",
+    "typescript": "^4.8.3"
+  }
+}
