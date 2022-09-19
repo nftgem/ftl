@@ -36,17 +36,6 @@ Usage:
     ReactDOM.render(<Component />, document.getElementById('root'))
 */
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-const useStyles: any = makeStyles((theme: any) => ({
-    root: {
-        flexGrow: 1,
-    },
-    paper: {
-        padding: theme.spacing(2),
-        textAlign: 'center',
-        color: theme.palette.text.secondary,
-    },
-}));
 const ftl: any = (strings: any, ...values: any) => {
     const template: any = strings.reduce((acc: any, str: any, i: string | number) => {
         const value: any = values[i];
@@ -54,9 +43,8 @@ const ftl: any = (strings: any, ...values: any) => {
     });
     const lines: any = template
         .split('\n')
-        .filter((line: string) => line.trim());
-    const indent: any = lines[0].match(/^\s*/)[0].length;
-    const root: any = lines[0].trim();
+        .filter((e:any) => e.trim().length > 0)
+    const indent: any = lines[1].match(/^\s*/)[0].length;
     const children: any = lines.slice(1).map((line: { match: (arg0: RegExp) => (string | any[])[]; trim: () => string }) => {
         const indent: any = line.match(/^\s*/)[0].length;
         const name: any = line.trim().split(' ')[0];
@@ -75,7 +63,7 @@ const ftl: any = (strings: any, ...values: any) => {
         components[indent] = component;
     });
     return (props: any) => {
-        const classes: any = useStyles();
         return React.cloneElement(components[indent], props);
     };
 }
+export default ftl;
