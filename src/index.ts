@@ -11,12 +11,13 @@ SUMMARY:
 5. the first indent sets the indent for the entire template.
 EXAMPLE:
 Box
+    |Pipe indicates non-markup text
     Grid container spacing={2}
         Grid item xs={6}
             Typography variant="h3" (Welcome to ${id} Staking Pool!!)
             Typography variant="subtitle1" (stake your tokens to earn more tokens)
 is converted to:
-<Box>
+<Box>Pipe indicates non-markup text
     <Grid container spacing={2}>
         <Grid item xs={6}>
             <Typography variant="h3">Welcome to {id} Staking Pool!!</Typography>
@@ -36,34 +37,59 @@ Usage:
     ReactDOM.render(<Component />, document.getElementById('root'))
 */
 import React from 'react';
-const ftl: any = (strings: any, ...values: any) => {
-    const template: any = strings.reduce((acc: any, str: any, i: string | number) => {
-        const value: any = values[i];
-        return acc + (value ? value : '') + str;
-    });
-    const lines: any = template
-        .split('\n')
-        .filter((e:any) => e.trim().length > 0)
-    const indent: any = lines[1].match(/^\s*/)[0].length;
-    const children: any = lines.slice(1).map((line: { match: (arg0: RegExp) => (string | any[])[]; trim: () => string }) => {
-        const indent: any = line.match(/^\s*/)[0].length;
-        const name: any = line.trim().split(' ')[0];
-        const attributes: any = line.trim().split(' ').slice(1).reduce((acc: any, attr: any) => {
-            const [key, value]: any = attr.split('=');
-            acc[key] = value;
-            return acc;
-        }, {});
-        return { indent, name, attributes };
-    });
-    const components: any = {};
-    children.forEach((child: { indent: any; name: any; attributes: any }) => {
-        const { indent, name, attributes } = child;
-        const parent: any = components[indent - indent];
-        const component: any = React.createElement(name, attributes, parent);
-        components[indent] = component;
-    });
-    return (props: any) => {
-        return React.cloneElement(components[indent], props);
+const ftl = (strings: any, ...values: any) => {
+    let template = strings.reduce((acc, str, i) => acc + str + (values[i] || ''), '').trim();
+    template = strings.reduce((acc: any, s: any, i: any) => {
+        const value = values[i - 1];
+        const lines = s.split('\n');
+        const lastLine = lines.pop();
+        if (lastLine) {
+            acc.push(lastLine);
+        }
+        if (value) {
+            acc.push(value);
+        }
+        if (lines.length) {
+            acc.push(...lines);
+        }
+        return acc;
+    }, []).filter(e => e.trim())
+    console.log(template);
+    const root = template.pop();
+    const indent = root.match(/^\s*/)[0].length; 
+    const lines = template.reverse(); 
+    const stack = [root];
+    const _props = (line: any) => {
+        const [name, ...attrs] = line.trim().split(' ');
+        const props: any = {};
+        const events: any = {};
+        for (const attr of attrs) {
+            const [key, value] = attr.split('=');
+            if (key.startsWith('on')) {
+                events[key] = value;
+            } else {
+                props[key] = value;
+            }
+        }
+        return {name, props, events};
     };
-}
+    for (const line of lines) {
+        const lineIndent = line.match(/^\s*/)[0].length;
+        const depth = (lineIndent - indent) / 4;
+        const {name, props, events} = _props(line);
+        const element:any = React.createElement(name, props, stack.pop());
+        for (const [key, value] of Object.entries(events)) {
+            element.props[key] = eval(value as any);
+        }
+        if (depth > 0) {
+            stack[stack.length - 1].props.children = element;
+        } else {
+            stack.push(element);
+        }
+    }
+    return (props: any) => {
+        const element = React.cloneElement(stack.pop(), props);
+        return element;
+    };
+};
 export default ftl;
